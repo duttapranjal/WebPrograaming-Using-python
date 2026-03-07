@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "MealMesh: Start Frontend Dev Server",
+			"type": "shell",
+			"command": "cd mealmesh/frontend && npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

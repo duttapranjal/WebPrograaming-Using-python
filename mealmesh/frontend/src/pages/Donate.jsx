@@ -1,5 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import { FoodIcon, CheckIcon, ClipboardIcon, BuildingIcon } from "../components/Icons";
 
 const FOOD_TYPES = [
   "Cooked Meals", "Raw Ingredients", "Baked Goods",
@@ -19,10 +23,39 @@ function Donate() {
     readyBy: "", shelfLife: "", location: "", notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const { token, user } = useAuth();
+  const navigate = useNavigate();
 
   const update = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
 
-  const handleSubmit = () => setSubmitted(true);
+  const handleSubmit = async () => {
+    if (!form.location) return setSubmitError("Please enter a pickup address");
+    if (!form.foodName) return setSubmitError("Please enter the food name");
+    if (!form.quantity) return setSubmitError("Please enter the quantity");
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      if (token) {
+        // Authenticated donor — post to real backend
+        await axios.post(
+          "http://localhost:5000/api/food",
+          { ...form, donorName: form.donorName || user?.name },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+      // Even if not logged in, show success screen (demo mode)
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err.response?.data?.message || "Submission failed — is the server running?");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   /* ── Success screen ── */
   if (submitted) {
@@ -38,9 +71,9 @@ function Donate() {
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", delay: 0.2 }}
-            className="text-7xl mb-5"
+            className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-green-200"
           >
-            🎉
+            <CheckIcon className="w-10 h-10 text-white" />
           </motion.div>
           <h2 className="text-3xl font-black text-gray-900 mb-2">Donation Listed!</h2>
           <p className="text-gray-500 mb-1">Your surplus food is live on the board.</p>
@@ -60,7 +93,7 @@ function Donate() {
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => { setSubmitted(false); setStep(1); setForm({ donorName: "", donorType: "Restaurant", foodType: "", foodName: "", quantity: "", readyBy: "", shelfLife: "", location: "", notes: "" }); }}
+            onClick={() => { setSubmitted(false); setStep(1); setSubmitError(""); setForm({ donorName: "", donorType: "Restaurant", foodType: "", foodName: "", quantity: "", readyBy: "", shelfLife: "", location: "", notes: "" }); }}
             className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg shadow-green-200 w-full"
           >
             + Donate More Food
@@ -285,12 +318,18 @@ function Donate() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSubmit}
-                  className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-8 py-3 rounded-xl text-sm font-semibold shadow-md shadow-green-200"
+                  disabled={submitting}
+                  className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-8 py-3 rounded-xl text-sm font-semibold shadow-md shadow-green-200 flex items-center gap-2 disabled:opacity-60"
                 >
-                  🍱 Post Donation
+                  <FoodIcon className="w-4 h-4" />
+                  {submitting ? "Posting..." : "Post Donation"}
                 </motion.button>
               )}
             </div>
+
+            {submitError && (
+              <p className="text-red-500 text-xs mt-3 text-center">{submitError}</p>
+            )}
 
           </motion.div>
         </AnimatePresence>

@@ -1,14 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-
-const NGO_REQUESTS = [
-  { id: 1, name: "Asha Shelter Home", location: "Paharganj, Delhi", need: 80, type: "Families", urgency: "critical", icon: "🏠", distance: "1.2 km", verified: true },
-  { id: 2, name: "Happy Kids Orphanage", location: "Laxmi Nagar, Delhi", need: 45, type: "Children", urgency: "high", icon: "👶", distance: "2.8 km", verified: true },
-  { id: 3, name: "Old Age Care Trust", location: "Mayur Vihar, Delhi", need: 60, type: "Elderly", urgency: "medium", icon: "👴", distance: "4.1 km", verified: true },
-  { id: 4, name: "Naya Sawera Foundation", location: "Shahdara, Delhi", need: 120, type: "Migrants", urgency: "high", icon: "🙏", distance: "5.3 km", verified: false },
-  { id: 5, name: "Street Connect NGO", location: "Karol Bagh, Delhi", need: 30, type: "Homeless", urgency: "critical", icon: "🌙", distance: "0.9 km", verified: true },
-  { id: 6, name: "Bal Vikas Sanstha", location: "Rohini, Delhi", need: 90, type: "Children", urgency: "low", icon: "🎒", distance: "7.2 km", verified: true },
-];
+import { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  NGOIcon, PlateIcon, CheckIcon, BoltIcon, LocationIcon, BadgeIcon,
+} from "../components/Icons";
 
 const URGENCY = {
   critical: { bg: "bg-red-50 border-red-200", badge: "bg-red-100 text-red-700", dot: "bg-red-500", bar: "bg-red-400", label: "Critical Need" },
@@ -17,15 +12,38 @@ const URGENCY = {
   low:      { bg: "bg-green-50 border-green-200", badge: "bg-green-100 text-green-700", dot: "bg-green-400", bar: "bg-green-400", label: "Can Wait" },
 };
 
-const TOTAL_NEED = NGO_REQUESTS.reduce((a, b) => a + b.need, 0);
+// Map ngoType to a display urgency level
+function urgencyFromCapacity(capacity) {
+  if (!capacity) return "medium";
+  if (capacity >= 100) return "critical";
+  if (capacity >= 60)  return "high";
+  if (capacity >= 30)  return "medium";
+  return "low";
+}
 
 function NGO() {
-  const [filter, setFilter] = useState("all");
+  const [ngos,    setNgos]    = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter,  setFilter]  = useState("all");
   const [matched, setMatched] = useState([]);
 
-  const filtered = filter === "all"
-    ? NGO_REQUESTS
-    : NGO_REQUESTS.filter((r) => r.urgency === filter);
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/food/ngos")
+      .then(({ data }) => setNgos(data))
+      .catch(() => setNgos([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const enriched = ngos.map((n) => ({
+    ...n,
+    urgency: urgencyFromCapacity(n.capacity),
+  }));
+
+  const filtered =
+    filter === "all" ? enriched : enriched.filter((n) => n.urgency === filter);
+
+  const totalNeed = enriched.reduce((a, b) => a + (b.capacity || 0), 0);
+  const verified  = enriched.filter((n) => n.verified).length;
 
   const toggleMatch = (id) =>
     setMatched((prev) =>
@@ -47,10 +65,14 @@ function NGO() {
               NGO Demand Board
             </motion.h1>
             <p className="text-gray-500">
-              {NGO_REQUESTS.length} organizations need food right now ·{" "}
-              <span className="text-red-500 font-semibold">
-                {NGO_REQUESTS.filter((r) => r.urgency === "critical").length} critical
-              </span>
+              {loading ? "Loading partner organizations…" : (
+                <>
+                  {enriched.length} organizations need food right now ·{" "}
+                  <span className="text-red-500 font-semibold">
+                    {enriched.filter((n) => n.urgency === "critical").length} critical
+                  </span>
+                </>
+              )}
             </p>
           </div>
 
@@ -75,9 +97,30 @@ function NGO() {
         {/* ── Stats Bar ── */}
         <div className="grid grid-cols-3 gap-4 mb-10">
           {[
-            { label: "Total Meals Needed", value: `${TOTAL_NEED}`, sub: "across all orgs", icon: "🍱" },
-            { label: "Verified NGOs", value: `${NGO_REQUESTS.filter((n) => n.verified).length}/${NGO_REQUESTS.length}`, sub: "authenticated", icon: "✅" },
-            { label: "Matched Today", value: `${matched.length}`, sub: "rescues initiated", icon: "⚡" },
+            {
+              label: "Total Meals Needed",
+              value: totalNeed || "—",
+              sub: "across all orgs",
+              Icon: PlateIcon,
+              iconColor: "text-green-600",
+              iconBg: "bg-green-50",
+            },
+            {
+              label: "Verified NGOs",
+              value: `${verified}/${enriched.length}`,
+              sub: "authenticated",
+              Icon: BadgeIcon,
+              iconColor: "text-blue-600",
+              iconBg: "bg-blue-50",
+            },
+            {
+              label: "Matched Today",
+              value: matched.length,
+              sub: "rescues initiated",
+              Icon: BoltIcon,
+              iconColor: "text-yellow-600",
+              iconBg: "bg-yellow-50",
+            },
           ].map((s, i) => (
             <motion.div
               key={i}
@@ -86,98 +129,144 @@ function NGO() {
               transition={{ delay: i * 0.1 }}
               className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center"
             >
-              <span className="text-3xl">{s.icon}</span>
-              <p className="text-2xl font-black text-gray-800 mt-1">{s.value}</p>
+              <div className={`w-10 h-10 rounded-xl ${s.iconBg} flex items-center justify-center mx-auto mb-2`}>
+                <s.Icon className={`w-5 h-5 ${s.iconColor}`} />
+              </div>
+              <p className="text-2xl font-black text-gray-800">{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
               <p className="text-xs text-gray-300">{s.sub}</p>
             </motion.div>
           ))}
         </div>
 
+        {/* ── Loading skeleton ── */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 animate-pulse h-52" />
+            ))}
+          </div>
+        )}
+
         {/* ── NGO Cards ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={filter}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-          >
-            {filtered.map((ngo, i) => {
-              const urg = URGENCY[ngo.urgency];
-              const isMatched = matched.includes(ngo.id);
+        {!loading && (
+          <AnimatePresence mode="wait">
+            {filtered.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="py-20 text-center bg-white rounded-2xl border border-gray-100"
+              >
+                <NGOIcon className="w-14 h-14 text-gray-200 mx-auto mb-3" />
+                <p className="text-gray-400">
+                  {enriched.length === 0
+                    ? "No NGOs registered yet. Be the first to join."
+                    : "No NGOs match this filter."}
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={filter}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              >
+                {filtered.map((ngo, i) => {
+                  const urg = URGENCY[ngo.urgency];
+                  const isMatched = matched.includes(ngo._id);
 
-              return (
-                <motion.div
-                  key={ngo.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.07 }}
-                  whileHover={{ y: -5 }}
-                  className={`rounded-2xl border-2 overflow-hidden shadow-sm ${urg.bg} relative`}
-                >
-                  {/* Urgency pulse overlay for critical */}
-                  {ngo.urgency === "critical" && (
-                    <div className="absolute inset-0 bg-red-400 opacity-5 animate-pulse pointer-events-none rounded-2xl" />
-                  )}
-
-                  {/* Top bar */}
-                  <div className={`h-1 w-full ${urg.bar}`} />
-
-                  <div className="p-5">
-                    {/* Card header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{ngo.icon}</span>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <h3 className="font-bold text-gray-900 text-base leading-tight">{ngo.name}</h3>
-                            {ngo.verified && (
-                              <span className="text-blue-500 text-sm" title="Verified NGO">✓</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-400 mt-0.5">📍 {ngo.location}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shrink-0 ${urg.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${urg.dot}`} />
-                        {urg.label}
-                      </span>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      {[
-                        { val: ngo.need, label: "meals needed" },
-                        { val: ngo.type, label: "serving" },
-                        { val: ngo.distance, label: "distance" },
-                      ].map((s, j) => (
-                        <div key={j} className="bg-white/70 rounded-xl p-2 text-center border border-white/50">
-                          <p className="font-bold text-gray-800 text-sm">{s.val}</p>
-                          <p className="text-xs text-gray-400">{s.label}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Match button */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => toggleMatch(ngo.id)}
-                      className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                        isMatched
-                          ? "bg-gray-800 text-white"
-                          : "bg-gradient-to-r from-green-600 to-emerald-500 text-white shadow-md shadow-green-200 hover:shadow-green-300"
-                      }`}
+                  return (
+                    <motion.div
+                      key={ngo._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.07 }}
+                      whileHover={{ y: -5 }}
+                      className={`rounded-2xl border-2 overflow-hidden shadow-sm ${urg.bg} relative`}
                     >
-                      {isMatched ? "✅ Matched Successfully" : "⚡ Auto-Match Donor"}
-                    </motion.button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </AnimatePresence>
+                      {ngo.urgency === "critical" && (
+                        <div className="absolute inset-0 bg-red-400 opacity-5 animate-pulse pointer-events-none rounded-2xl" />
+                      )}
+
+                      <div className={`h-1 w-full ${urg.bar}`} />
+
+                      <div className="p-5">
+                        {/* Card header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center">
+                              <NGOIcon className="w-6 h-6 text-blue-500" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <h3 className="font-bold text-gray-900 text-base leading-tight">
+                                  {ngo.orgName || ngo.name}
+                                </h3>
+                                {ngo.verified && (
+                                  <CheckIcon className="w-4 h-4 text-blue-500" title="Verified NGO" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <LocationIcon className="w-3 h-3 text-gray-400" />
+                                <p className="text-xs text-gray-400 truncate max-w-[140px]">
+                                  {ngo.address || "Location not set"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shrink-0 ${urg.badge}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${urg.dot}`} />
+                            {urg.label}
+                          </span>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                          {[
+                            { val: ngo.capacity || "—", label: "meals/day" },
+                            { val: ngo.ngoType || "General", label: "type" },
+                            { val: ngo.verified ? "Yes" : "Pending", label: "verified" },
+                          ].map((s, j) => (
+                            <div key={j} className="bg-white/70 rounded-xl p-2 text-center border border-white/50">
+                              <p className="font-bold text-gray-800 text-sm truncate">{s.val}</p>
+                              <p className="text-xs text-gray-400">{s.label}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Match button */}
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => toggleMatch(ngo._id)}
+                          className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                            isMatched
+                              ? "bg-gray-800 text-white"
+                              : "bg-gradient-to-r from-green-600 to-emerald-500 text-white shadow-md shadow-green-200 hover:shadow-green-300"
+                          }`}
+                        >
+                          {isMatched ? (
+                            <>
+                              <CheckIcon className="w-4 h-4" />
+                              Matched Successfully
+                            </>
+                          ) : (
+                            <>
+                              <BoltIcon className="w-4 h-4" />
+                              Auto-Match Donor
+                            </>
+                          )}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
       </div>
     </div>
@@ -185,4 +274,3 @@ function NGO() {
 }
 
 export default NGO;
-
