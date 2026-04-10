@@ -1,0 +1,36 @@
+<!--
+Project: Event Management Website
+Student Name: [Your Name]
+Roll Number: [Your Roll Number]
+Date: 2026-04-07
+-->
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="form-wrap">
+  <h1>Event Registration Form</h1>
+  <form id="registrationForm" method="post" action="{{ url_for('register') }}" novalidate>
+    <label for="full_name">Full Name</label>
+    <input id="full_name" name="full_name" type="text" required />
+
+    <label for="email">Email Address</label>
+    <input id="email" name="email" type="email" required />
+
+    <label for="phone">Phone Number</label>
+    <input id="phone" name="phone" type="tel" required maxlength="15" />
+
+    <label for="event_id">Event Selection</label>
+    <select id="event_id" name="event_id" required>
+      <option value="">Select an event</option>
+      {% for event in events %}
+      <option value="{{ event.id }}">{{ event.name }} ({{ event.date }})</option>
+      {% endfor %}
+    </select>
+
+    <label for="tickets">Number of Tickets</label>
+    <input id="tickets" name="tickets" type="number" min="1" max="20" value="1" required />
+
+    <button class="btn btn-primary" type="submit">Submit Registration</button>
+  </form>
+</section>
+{% endblock %}

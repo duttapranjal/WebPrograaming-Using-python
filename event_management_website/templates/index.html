@@ -1,0 +1,34 @@
+<!--
+Project: Event Management Website
+Student Name: [Your Name]
+Roll Number: [Your Roll Number]
+Date: 2026-04-07
+-->
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-content">
+    <p class="kicker">Smart Event Portal</p>
+    <h1 id="hero-title">Plan, Discover, and Join Inspiring Events</h1>
+    <p>
+      This Event Management Website allows users to browse upcoming events,
+      register in seconds, and lets administrators create, edit, or remove events
+      through a secure dashboard.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('event_list') }}">Browse Events</a>
+      <a class="btn btn-secondary" href="{{ url_for('register') }}">Register Now</a>
+    </div>
+  </div>
+  <div class="hero-panel">
+    <h2>Why EventSphere?</h2>
+    <ul>
+      <li>Dynamic event listings via Flask + Jinja2</li>
+      <li>Responsive UI with modern CSS Grid</li>
+      <li>Quick registration with JavaScript validation</li>
+      <li>Admin CRUD operations for complete event control</li>
+    </ul>
+  </div>
+</section>
+{% endblock %}

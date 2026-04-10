@@ -1,0 +1,54 @@
+<!--
+Project: Event Management Website
+Student Name: [Your Name]
+Roll Number: [Your Roll Number]
+Date: 2026-04-07
+-->
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="toolbar" aria-label="Event filters">
+  <input id="searchInput" type="search" placeholder="Search by name, venue, or category" />
+  <div class="filter-group" id="categoryFilters">
+    <button class="chip active" data-category="all" type="button">All</button>
+    {% for category in categories %}
+    <button class="chip" data-category="{{ category | lower }}" type="button">{{ category }}</button>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="toolbar" aria-label="Date filters">
+  <div class="filter-group" id="dateFilters">
+    <button class="chip active" data-date="all" type="button">All Dates</button>
+    <button class="chip" data-date="upcoming" type="button">Upcoming</button>
+    <button class="chip" data-date="this-month" type="button">This Month</button>
+  </div>
+</section>
+
+<section class="events-grid" id="eventsGrid" aria-live="polite">
+  {% for event in events %}
+  <article
+    class="event-card"
+    data-name="{{ event.name | lower }}"
+    data-venue="{{ event.venue | lower }}"
+    data-category="{{ event.category | lower }}"
+    data-date="{{ event.date }}"
+  >
+    <figure>
+      <img src="{{ event.image_url }}" alt="{{ event.name }} banner" />
+    </figure>
+    <div class="event-body">
+      <p class="event-category">{{ event.category }}</p>
+      <h3>{{ event.name }}</h3>
+      <p>{{ event.description }}</p>
+      <p><strong>Date:</strong> {{ event.date }} at {{ event.time }}</p>
+      <p><strong>Venue:</strong> {{ event.venue }}</p>
+      <p><strong>RSVP Count:</strong> <span class="rsvp-count">{{ event.rsvp_count }}</span></p>
+      <a class="btn btn-primary" href="{{ url_for('register') }}">Register</a>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+
+<p id="emptyState" class="empty-state" hidden>No events match your search/filter criteria.</p>
+{% endblock %}

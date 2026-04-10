@@ -1,0 +1,5 @@
+# Project: Event Management Website
+# Student Name: [Your Name]
+# Roll Number: [Your Roll Number]
+# Date: 2026-04-07
+Flask==3.1.0

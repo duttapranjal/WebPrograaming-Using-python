@@ -1,0 +1,119 @@
+<!--
+Project: Event Management Website
+Student Name: [Your Name]
+Roll Number: [Your Roll Number]
+Date: 2026-04-07
+-->
+{% extends 'base.html' %}
+
+{% block content %}
+{% if mode == 'login' %}
+<section class="form-wrap small">
+  <h1>Admin Login</h1>
+  <form method="post" action="{{ url_for('admin_login') }}">
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" required />
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required />
+
+    <button class="btn btn-primary" type="submit">Login</button>
+  </form>
+  <p class="hint">Use username: <strong>admin</strong>, password: <strong>admin123</strong></p>
+</section>
+{% else %}
+<section class="admin-layout">
+  <article class="form-wrap">
+    <h1>{% if mode == 'edit' %}Edit Event{% else %}Add New Event{% endif %}</h1>
+
+    {% if mode == 'edit' and edit_event %}
+    <form method="post" action="{{ url_for('admin_edit_event', event_id=edit_event.id) }}">
+      <label for="name">Event Name</label>
+      <input id="name" name="name" type="text" value="{{ edit_event.name }}" required />
+
+      <label for="date">Date</label>
+      <input id="date" name="date" type="date" value="{{ edit_event.date }}" required />
+
+      <label for="time">Time</label>
+      <input id="time" name="time" type="text" value="{{ edit_event.time }}" required />
+
+      <label for="venue">Venue</label>
+      <input id="venue" name="venue" type="text" value="{{ edit_event.venue }}" required />
+
+      <label for="category">Category</label>
+      <input id="category" name="category" type="text" value="{{ edit_event.category }}" required />
+
+      <label for="description">Description</label>
+      <textarea id="description" name="description" required>{{ edit_event.description }}</textarea>
+
+      <label for="image_url">Image URL</label>
+      <input id="image_url" name="image_url" type="url" value="{{ edit_event.image_url }}" required />
+
+      <div class="inline-actions">
+        <button class="btn btn-primary" type="submit">Update Event</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin_panel') }}">Cancel</a>
+      </div>
+    </form>
+    {% else %}
+    <form method="post" action="{{ url_for('admin_add_event') }}">
+      <label for="name">Event Name</label>
+      <input id="name" name="name" type="text" required />
+
+      <label for="date">Date</label>
+      <input id="date" name="date" type="date" required />
+
+      <label for="time">Time</label>
+      <input id="time" name="time" type="text" placeholder="06:00 PM" required />
+
+      <label for="venue">Venue</label>
+      <input id="venue" name="venue" type="text" required />
+
+      <label for="category">Category</label>
+      <input id="category" name="category" type="text" required />
+
+      <label for="description">Description</label>
+      <textarea id="description" name="description" required></textarea>
+
+      <label for="image_url">Image URL</label>
+      <input id="image_url" name="image_url" type="url" required />
+
+      <button class="btn btn-primary" type="submit">Add Event</button>
+    </form>
+    {% endif %}
+  </article>
+
+  <article>
+    <h2>Manage Events</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Venue</th>
+            <th>RSVP</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in events %}
+          <tr>
+            <td>{{ event.name }}</td>
+            <td>{{ event.date }} {{ event.time }}</td>
+            <td>{{ event.venue }}</td>
+            <td>{{ event.rsvp_count }}</td>
+            <td>
+              <a class="btn btn-small btn-secondary" href="{{ url_for('admin_edit_event', event_id=event.id) }}">Edit</a>
+              <form method="post" action="{{ url_for('admin_delete_event', event_id=event.id) }}" class="inline-form">
+                <button class="btn btn-small btn-danger" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+{% endif %}
+{% endblock %}
