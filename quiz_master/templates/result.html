@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master | Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="card result-summary">
+            <span class="badge">Quiz Completed</span>
+            <h1>Your Score: {{ score }} / {{ total_questions }}</h1>
+            <p class="score-percentage">{{ percentage }}%</p>
+            <p class="feedback">{{ feedback }}</p>
+            <div class="form-actions">
+                <a class="secondary-btn" href="{{ url_for('index') }}">Home</a>
+                <a class="primary-btn" href="{{ url_for('restart') }}">Play Again</a>
+            </div>
+        </section>
+
+        <section class="card review-card">
+            <h2>Answer Review</h2>
+            <div class="review-list">
+                {% for item in results %}
+                <article class="review-item {{ 'correct' if item.is_correct else 'wrong' }}">
+                    <div class="review-topline">
+                        <strong>Question {{ item.number }}</strong>
+                        <span>{{ 'Correct' if item.is_correct else 'Incorrect' }}</span>
+                    </div>
+                    <p>{{ item.question }}</p>
+                    <div class="review-meta">
+                        <div><strong>Your answer:</strong> {{ item.selected }}</div>
+                        <div><strong>Correct answer:</strong> {{ item.correct }}</div>
+                    </div>
+                    <p class="explanation">{{ item.explanation }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

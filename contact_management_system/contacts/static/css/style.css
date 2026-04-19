@@ -1,0 +1,26 @@
+body {
+    background: #f8f9fa;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+}
+
+.btn {
+    border-radius: 8px;
+}

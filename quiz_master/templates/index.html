@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master | Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="hero-shell">
+        <section class="hero-card">
+            <span class="badge">Quiz Master</span>
+            <h1>Test your knowledge with a quick quiz challenge.</h1>
+            <p>
+                This Flask app includes {{ total_questions }} multiple-choice questions,
+                automatic scoring, feedback, and a clean responsive UI.
+            </p>
+            <div class="hero-actions">
+                <a class="primary-btn" href="{{ url_for('quiz') }}">Start Quiz</a>
+                <div class="meta-note">5+ MCQs • Timer • Restart option</div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

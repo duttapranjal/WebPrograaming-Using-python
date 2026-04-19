@@ -1,0 +1,63 @@
+{% extends 'contacts/base.html' %}
+
+{% block title %}Contacts List{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Contact List</h1>
+        <p class="text-muted mb-0">Add, edit, search, and manage contacts easily.</p>
+    </div>
+    <a href="{% url 'add_contact' %}" class="btn btn-primary">+ Add New Contact</a>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-10">
+        <input type="text" name="search" class="form-control" placeholder="Search by name, phone number, or email" value="{{ search_query }}">
+    </div>
+    <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        {% if contacts %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone Number</th>
+                        <th>Email</th>
+                        <th>Created</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in contacts %}
+                    <tr>
+                        <td>{{ contact.name }}</td>
+                        <td>{{ contact.phone_number }}</td>
+                        <td>{{ contact.email }}</td>
+                        <td>{{ contact.created_at|date:"M d, Y" }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'view_contact' contact.pk %}" class="btn btn-sm btn-info text-white">View</a>
+                            <a href="{% url 'edit_contact' contact.pk %}" class="btn btn-sm btn-warning text-dark">Edit</a>
+                            <a href="{% url 'delete_contact' contact.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <h4>No contacts found</h4>
+            <p class="text-muted">Start by adding your first contact.</p>
+            <a href="{% url 'add_contact' %}" class="btn btn-primary">Add Contact</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

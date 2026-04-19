@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master | Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="quiz-header card">
+            <div>
+                <span class="badge">Quiz in Progress</span>
+                <h1>Answer all questions and submit your quiz.</h1>
+                <p>Select one answer for each question before the timer runs out.</p>
+            </div>
+            <div class="timer-box">
+                <span>Time Left</span>
+                <strong id="timer">05:00</strong>
+            </div>
+        </section>
+
+        <form class="quiz-form" action="{{ url_for('submit') }}" method="post" id="quizForm">
+            {% for question in questions %}
+            {% set question_index = loop.index0 %}
+            <section class="card question-card">
+                <div class="question-heading">
+                    <span class="question-number">Q{{ loop.index }}</span>
+                    <h2>{{ question.prompt }}</h2>
+                </div>
+                <div class="options-grid">
+                    {% for option in question.options %}
+                    <label class="option-item">
+                        <input type="radio" name="question-{{ question_index }}" value="{{ option }}">
+                        <span>{{ option }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+
+            <div class="form-actions">
+                <a class="secondary-btn" href="{{ url_for('restart') }}">Restart</a>
+                <button class="primary-btn" type="submit">Submit Quiz</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const totalSeconds = {{ time_limit }};
+        const timerElement = document.getElementById("timer");
+        const form = document.getElementById("quizForm");
+        let remaining = totalSeconds;
+
+        function renderTimer() {
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            timerElement.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        }
+
+        renderTimer();
+
+        const countdown = setInterval(() => {
+            remaining -= 1;
+            renderTimer();
+
+            if (remaining <= 0) {
+                clearInterval(countdown);
+                form.submit();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

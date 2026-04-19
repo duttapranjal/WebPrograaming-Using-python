@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Home | Simple Blog{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <p class="eyebrow">Experiment 5</p>
+        <h1>Simple Blog Web Application</h1>
+        <p class="subtitle">Create, read, update, and delete blog posts with Flask.</p>
+    </div>
+    <a class="btn primary" href="{{ url_for('create_post') }}">Create New Post</a>
+</section>
+
+<section class="posts-grid">
+    {% for post in posts %}
+        <article class="post-card">
+            <div class="post-header">
+                <h2>{{ post.title }}</h2>
+                <span class="post-id">#{{ post.id }}</span>
+            </div>
+            <p class="post-content">{{ post.content }}</p>
+            <div class="post-actions">
+                <a class="btn secondary" href="{{ url_for('edit_post', post_id=post.id) }}">Edit</a>
+                <form action="{{ url_for('delete_post', post_id=post.id) }}" method="post" onsubmit="return confirm('Delete this post?');">
+                    <button type="submit" class="btn danger">Delete</button>
+                </form>
+            </div>
+        </article>
+    {% else %}
+        <div class="empty-state">
+            <h2>No blog posts yet</h2>
+            <p>Create the first post to start using the application.</p>
+            <a class="btn primary" href="{{ url_for('create_post') }}">Create Post</a>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}
