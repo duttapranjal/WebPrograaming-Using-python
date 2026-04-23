@@ -1,0 +1,83 @@
+<!--
+    index.html - Homepage / Product Listing Page
+    ShopEasy E-Commerce Website
+    
+    Shows a hero banner and all products in a card grid layout.
+    Each product card has an "Add to Cart" button.
+-->
+{% extends 'store/base.html' %}
+
+{% block title %}Home - Shop Products{% endblock %}
+
+{% block content %}
+
+<!-- ===== HERO SECTION ===== -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Welcome to <span class="highlight">ShopEasy!</span> 🛍️</h1>
+        <p class="hero-subtitle">Discover amazing products at unbeatable prices. Quality you can trust!</p>
+        <a href="#products" class="btn btn-hero">Shop Now ↓</a>
+    </div>
+
+    <!-- Fun decorative badges -->
+    <div class="hero-badges">
+        <div class="badge">🚚 Free Delivery</div>
+        <div class="badge">🔒 Secure Payment</div>
+        <div class="badge">⭐ Top Quality</div>
+    </div>
+</section>
+
+<!-- ===== PRODUCTS SECTION ===== -->
+<section class="products-section" id="products">
+
+    <div class="section-header">
+        <h2 class="section-title">🛒 Our Products</h2>
+        <p class="section-subtitle">{{ products.count }} amazing products available!</p>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid">
+
+        {% for product in products %}
+        <!-- Product Card -->
+        <div class="product-card" id="product-{{ product.id }}">
+
+            <!-- Product Emoji / Image Area -->
+            <div class="product-image">
+                <span class="product-emoji">{{ product.emoji }}</span>
+                <!-- Category Badge -->
+                <span class="category-badge">{{ product.get_category_display }}</span>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-description">{{ product.description }}</p>
+
+                <!-- Price and Button Row -->
+                <div class="product-footer">
+                    <span class="product-price">₹{{ product.price }}</span>
+
+                    <!-- Add to Cart Button - calls addToCart() in script.js -->
+                    <button
+                        class="btn btn-add-cart"
+                        onclick="addToCart({{ product.id }}, '{{ product.name }}')"
+                        id="btn-{{ product.id }}"
+                    >
+                        + Add to Cart
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+        <!-- Shown if no products exist -->
+        <div class="empty-message">
+            <p>😕 No products available right now. Check back soon!</p>
+        </div>
+        {% endfor %}
+
+    </div>
+</section>
+
+{% endblock %}

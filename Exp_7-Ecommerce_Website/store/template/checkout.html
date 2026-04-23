@@ -1,0 +1,144 @@
+<!--
+    checkout.html - Checkout Page
+    ShopEasy E-Commerce Website
+    
+    Collects user details (name, email, address) and
+    shows order summary before placing the order.
+-->
+{% extends 'store/base.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+
+<section class="checkout-section">
+    <div class="section-header">
+        <h2 class="section-title">📦 Checkout</h2>
+        <p class="section-subtitle">Almost there! Fill in your details to complete the order.</p>
+    </div>
+
+    <div class="checkout-layout">
+
+        <!-- ===== CHECKOUT FORM ===== -->
+        <div class="checkout-form-box">
+            <h3 class="form-title">🙋 Your Details</h3>
+
+            <!--
+                Form submits to place_order view.
+                method="post" is required for Django forms.
+                {% csrf_token %} is required by Django for security!
+            -->
+            <form action="{% url 'place_order' %}" method="post" class="checkout-form" id="checkout-form">
+                {% csrf_token %}
+
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label for="name">👤 Full Name *</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="e.g. Rahul Sharma"
+                        required
+                        class="form-input"
+                    >
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">📧 Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="e.g. rahul@example.com"
+                        class="form-input"
+                    >
+                </div>
+
+                <!-- Address -->
+                <div class="form-group">
+                    <label for="address">🏠 Delivery Address *</label>
+                    <textarea
+                        id="address"
+                        name="address"
+                        placeholder="e.g. 123, MG Road, Koramangala"
+                        required
+                        class="form-input"
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <!-- City -->
+                <div class="form-group">
+                    <label for="city">🏙️ City *</label>
+                    <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        placeholder="e.g. Bengaluru"
+                        required
+                        class="form-input"
+                    >
+                </div>
+
+                <!-- Payment Note (Simulated) -->
+                <div class="payment-note">
+                    💳 <strong>Payment:</strong> This is a simulated checkout. No real payment required!
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-place-order">
+                    🎉 Place Order
+                </button>
+
+            </form>
+        </div>
+
+        <!-- ===== ORDER SUMMARY ===== -->
+        <div class="checkout-summary">
+            <h3 class="summary-title">🧾 Your Order</h3>
+
+            {% for item in cart_items %}
+            <div class="checkout-item">
+                <span>{{ item.emoji }} {{ item.name }} × {{ item.quantity }}</span>
+                <span>₹{{ item.total }}</span>
+            </div>
+            {% endfor %}
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row">
+                <span>Delivery:</span>
+                <span class="free-tag">FREE ✅</span>
+            </div>
+
+            <div class="summary-row total-row">
+                <strong>Total Payable:</strong>
+                <strong class="checkout-total">₹{{ cart_total }}</strong>
+            </div>
+
+            <!-- Back to Cart -->
+            <a href="{% url 'cart' %}" class="btn btn-outline">← Edit Cart</a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple client-side form validation
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const city = document.getElementById('city').value.trim();
+
+        if (!name || !address || !city) {
+            e.preventDefault();
+            alert('⚠️ Please fill in all required fields!');
+        }
+    });
+</script>
+{% endblock %}

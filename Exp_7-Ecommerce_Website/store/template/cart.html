@@ -1,0 +1,136 @@
+<!--
+    cart.html - Shopping Cart Page
+    ShopEasy E-Commerce Website
+    
+    Shows all items in the cart with:
+    - Quantity update buttons (+ / -)
+    - Remove button per item
+    - Individual item totals
+    - Overall cart total
+    - Proceed to checkout button
+-->
+{% extends 'store/base.html' %}
+
+{% block title %}My Cart{% endblock %}
+
+{% block content %}
+
+<section class="cart-section">
+    <div class="section-header">
+        <h2 class="section-title">🛒 My Shopping Cart</h2>
+
+        {% if cart_items %}
+        <p class="section-subtitle">{{ cart_count }} item(s) in your cart</p>
+        {% endif %}
+    </div>
+
+    {% if cart_items %}
+
+    <div class="cart-layout">
+
+        <!-- ===== CART ITEMS TABLE ===== -->
+        <div class="cart-items">
+
+            {% for item in cart_items %}
+            <!-- Cart Item Row -->
+            <div class="cart-item" id="cart-item-{{ item.id }}">
+
+                <!-- Product Emoji -->
+                <div class="cart-item-emoji">{{ item.emoji }}</div>
+
+                <!-- Product Name and Price -->
+                <div class="cart-item-info">
+                    <h4 class="cart-item-name">{{ item.name }}</h4>
+                    <p class="cart-item-price">₹{{ item.price }} each</p>
+                </div>
+
+                <!-- Quantity Controls (+ / -) -->
+                <div class="quantity-controls">
+                    <button
+                        class="qty-btn qty-decrease"
+                        onclick="updateCart('{{ item.id }}', 'decrease')"
+                        title="Decrease quantity"
+                    >−</button>
+
+                    <span class="qty-display" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+
+                    <button
+                        class="qty-btn qty-increase"
+                        onclick="updateCart('{{ item.id }}', 'increase')"
+                        title="Increase quantity"
+                    >+</button>
+                </div>
+
+                <!-- Item Total -->
+                <div class="cart-item-total" id="item-total-{{ item.id }}">
+                    ₹{{ item.total }}
+                </div>
+
+                <!-- Remove Button -->
+                <button
+                    class="btn-remove"
+                    onclick="removeFromCart('{{ item.id }}')"
+                    title="Remove item"
+                >✕</button>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- ===== CART SUMMARY BOX ===== -->
+        <div class="cart-summary">
+            <h3 class="summary-title">📋 Order Summary</h3>
+
+            <div class="summary-row">
+                <span>Items ({{ cart_count }}):</span>
+                <span id="summary-total">₹{{ cart_total }}</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Delivery:</span>
+                <span class="free-tag">FREE ✅</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row total-row">
+                <strong>Total:</strong>
+                <strong id="grand-total">₹{{ cart_total }}</strong>
+            </div>
+
+            <!-- Proceed to Checkout -->
+            <a href="{% url 'checkout' %}" class="btn btn-checkout">
+                Proceed to Checkout →
+            </a>
+
+            <!-- Continue Shopping -->
+            <a href="{% url 'index' %}" class="btn btn-outline">
+                ← Continue Shopping
+            </a>
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <!-- Empty Cart Message -->
+    <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h3>Your cart is empty!</h3>
+        <p>Looks like you haven't added anything yet. Go explore our products!</p>
+        <a href="{% url 'index' %}" class="btn btn-primary">Start Shopping →</a>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // CSRF token needed for Django POST requests
+    const CSRF_TOKEN = '{{ csrf_token }}';
+</script>
+{% endblock %}
