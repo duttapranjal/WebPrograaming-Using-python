@@ -21,7 +21,7 @@ sleep 3
 # Start frontend in background
 echo "🎨 Starting frontend server on port 5173..."
 cd "$SCRIPT_DIR/frontend"
-npm run dev &
+npm run dev &h
 FRONTEND_PID=$!
 
 # Wait for both processes
